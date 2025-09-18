@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Social — Feed</title>
+  <link rel="stylesheet" href="stylefeed.css">
+
+  
+</head>
+
+<body>
+
+  <header class="navbar">
+    <div class="brand">College Social</div>
+    <div class="nav-right">
+      <img id="navAvatar" class="nav-avatar" src="" alt="avatar">
+      <span id="navName"></span>
+      <button id="themeToggle" title="Toggle theme">🌓</button>
+      <button id="goProfile">Profile</button>
+      <button id="doLogout">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="controls">
+      <input id="searchBar" placeholder="Search posts / people..." />
+      <select id="filterFeed">
+        <option value="all">All posts</option>
+        <option value="mine">My posts</option>
+        <option value="followed">Followed users first</option>
+        <option value="most_liked">Most liked</option>
+      </select>
+    </section>
+
+    <section class="create-toggle">
+      <button id="toggleCreate">Create Post</button>
+    </section>
+
+    <form id="createForm" class="create-form">
+      <textarea id="postText" placeholder="Share something with your college..."></textarea>
+      <input id="postImage" placeholder="Optional image URL" />
+      <div class="row">
+        <button id="btnPost">Post</button>
+        <small class="muted">Visible only to your college</small>
+      </div>
+    </form>
+
+    <section id="feed" class="feed"></section>
+
+    <div class="center">
+      <button id="viewMore">View more posts</button>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // --- DB helpers ---
+      const DB = {
+        get: (k) => JSON.parse(localStorage.getItem(k) || "null"),
+        set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+        remove: (k) => localStorage.removeItem(k)
+      };
+
+      if (!DB.get('users')) DB.set('users', []);
+      if (!DB.get('posts')) DB.set('posts', []);
+      if (!DB.get('settings')) DB.set('settings', { theme: 'light' });
+
+      const session = DB.get('session');
+      if (!session) location.href = 'index.html';
+
+      const users = DB.get('users');
+      const me = users.find(u => u.email === session.email);
+
+      const navName = document.getElementById('navName');
+      const navAvatar = document.getElementById('navAvatar');
+      navName.textContent = me.name;
+      navAvatar.src = me.photo || 'https://via.placeholder.com/40';
+
+      // Dark/light theme
+      const themeToggle = document.getElementById('themeToggle');
+      const settings = DB.get('settings');
+      document.body.classList.toggle('dark', settings.theme === 'dark');
+      themeToggle.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+
+      themeToggle.onclick = () => {
+        const isDark = document.body.classList.toggle('dark');
+        settings.theme = isDark ? 'dark' : 'light';
+        DB.set('settings', settings);
+        themeToggle.textContent = isDark ? '☀️' : '🌙';
+      };
+
+      // Logout
+      document.getElementById('doLogout').onclick = () => {
+        DB.remove('session');
+        location.href = 'index.html';
+      };
+
+      // Profile nav
+      document.getElementById('goProfile').onclick = () => {
+        location.href = 'profile.html';
+      };
+
+      // Create post toggle
+      const toggleCreate = document.getElementById('toggleCreate');
+      const createForm = document.getElementById('createForm');
+      toggleCreate.onclick = () => {
+        const isVisible = createForm.style.display === 'block';
+        createForm.style.display = isVisible ? 'none' : 'block';
+        createForm.style.opacity = isVisible ? 0 : 1;
+      };
+
+      // Post submit
+      document.getElementById('btnPost').onclick = (e) => {
+        e.preventDefault();
+        const text = document.getElementById('postText').value.trim();
+        const image = document.getElementById('postImage').value.trim();
+        if (!text && !image) return alert('Post cannot be empty!');
+        const posts = DB.get('posts') || [];
+        posts.unshift({
+          id: Date.now(),
+          userEmail: me.email,
+          name: me.name,
+          avatar: me.photo || 'https://via.placeholder.com/40',
+          text, image,
+          createdAt: new Date().toLocaleString()
+        });
+        DB.set('posts', posts);
+        document.getElementById('postText').value = '';
+        document.getElementById('postImage').value = '';
+        createForm.style.display = 'none';
+        loadFeed();
+      };
+
+      const feed = document.getElementById('feed');
+
+      function loadFeed() {
+        const allPosts = DB.get('posts') || [];
+        feed.innerHTML = '';
+        allPosts.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'post-card';
+          card.innerHTML = `
+            <div class="post-header">
+              <img src="${p.avatar}" />
+              <div>
+                <div class="name">${p.name}</div>
+                <div class="time">${p.createdAt}</div>
+              </div>
+            </div>
+            <div class="post-body">
+              <p>${p.text}</p>
+              ${p.image ? `<div class="image-wrapper"><img src="${p.image}" /></div>` : ''}
+            </div>
+          `;
+          feed.appendChild(card);
+        });
+      }
+
+      loadFeed();
+    });
+
+
+    
+  </script>
+<script src="script.js"></script>
+
+
+</body>
+</html>

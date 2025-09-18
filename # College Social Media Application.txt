@@ -1,0 +1,95 @@
+# College Social Media Application
+
+## 🔍 Project Overview
+
+Design and develop a college-based social media application where students can:
+
+- Create or join colleges  
+- Post content visible only within their college  
+- Connect with other students from the same college  
+- Use basic social features like likes, comments, and follows  
+
+The project simulates a private social network within academic institutions — similar to Facebook’s original concept.
+
+---
+
+## ✅ Core Features
+
+### 1. User Authentication (Simulated)
+- **Sign Up** with:
+  - Name
+  - Email
+  - Password
+  - College name (select or create)
+- **Login system** using session storage
+- Logged-in session must persist
+- Restrict all core features unless logged in
+
+---
+
+### 2. College Creation and Joining
+- Users can create a **new college** if it doesn’t exist
+- List of existing colleges stored in LocalStorage
+- User profile must be associated with **exactly one college**
+- Users can only see and interact with users/posts from the **same college**
+
+---
+
+### 3. User Profiles
+- View and edit profile:
+  - Name
+  - Bio
+  - Photo
+  - College (read-only once selected)
+- College name should be read-only to simulate **identity verification**
+
+---
+
+### 4. College Feed (Private Social Feed)
+- Create posts (text + optional image URL)
+- View posts only from users within the same college
+- Reverse chronological order
+- Each post includes:
+  - User name
+  - Timestamp
+  - Content
+  - Like button
+  - Comments section
+
+---
+
+### 5. Likes and Comments
+- Like/unlike posts (store per-user)
+- Comment on posts (visible to same-college users)
+- Show number of likes and comments
+
+---
+
+### 6. Follow Other Students
+- Search students from the same college
+- Follow/unfollow functionality
+- Optional: Feed shows "Followed users" first
+
+---
+
+### 7. Search and Filter
+- Search bar to find:
+  - Posts by keyword
+  - Users by name
+  - Colleges (on signup)
+- Filter feed by:
+  - All posts
+  - My posts
+  - Most liked posts
+
+---
+
+### 8. Dark Mode / Theme Switcher
+- Toggle between light/dark theme
+- Save user preference in LocalStorage
+
+---
+
+### 9. Responsive Design
+- Must work well on mobile and desktop
+- Use **CSS Flexbox** or **Grid** for layout

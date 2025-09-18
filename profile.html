@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>College Social — Profile</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="styleprofile.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="brand">College Social</div>
+  <div class="nav-right">
+    <img id="navAvatar" src="https://via.placeholder.com/40" alt="avatar">
+    <span id="navName">John Doe</span>
+    <button id="themeToggle">🌓</button>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card profile-card">
+    <div class="left">
+      <div class="avatar-wrap">
+        <img id="profileImg" class="avatar-lg" src="https://via.placeholder.com/150">
+        <label class="camera" for="fileInput">📷</label>
+        <input id="fileInput" type="file" accept="image/*" style="display:none">
+      </div>
+    </div>
+
+    <form id="profileForm" class="right">
+      <label>Name</label>
+      <input id="pf_name" placeholder="Your Name" />
+      <label>Bio</label>
+      <textarea id="pf_bio" placeholder="About you..."></textarea>
+      <label>Profile image (URL)</label>
+      <input id="pf_url" placeholder="Paste image url then blur to preview" />
+      <label>College</label>
+      <input id="pf_college" disabled value="My College"/>
+      <div class="row">
+        <button id="saveProfile" type="button">Save</button>
+        <button id="cancelProfile" type="button">Cancel</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script>
+// Load user session & users
+const session = JSON.parse(localStorage.getItem('session')||'{}');
+const users = JSON.parse(localStorage.getItem('users')||'[]');
+let currentUser = users.find(u => u.email === session.email) || {
+  name:'John Doe', avatar:'https://via.placeholder.com/150', bio:''
+};
+
+// Set navbar info
+function updateNavbar() {
+  document.getElementById('navName').textContent = currentUser.name;
+  document.getElementById('navAvatar').src = currentUser.avatar;
+}
+updateNavbar();
+
+// Prefill profile form
+function prefillProfile() {
+  document.getElementById('pf_name').value = currentUser.name;
+  document.getElementById('pf_bio').value = currentUser.bio;
+  document.getElementById('pf_url').value = currentUser.avatar;
+  document.getElementById('profileImg').src = currentUser.avatar;
+}
+prefillProfile();
+
+// Theme toggle
+document.getElementById('themeToggle').onclick = () => document.body.classList.toggle('dark');
+
+// Avatar file upload preview
+document.getElementById('fileInput').onchange = e => {
+  const file = e.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = ev => {
+      currentUser.avatar = ev.target.result;
+      document.getElementById('profileImg').src = ev.target.result;
+      updateNavbar();
+      document.getElementById('pf_url').value = '';
+    }
+    reader.readAsDataURL(file);
+  }
+}
+
+// URL input preview
+document.getElementById('pf_url').onblur = e => {
+  const url = e.target.value.trim();
+  if(url){
+    currentUser.avatar = url;
+    document.getElementById('profileImg').src = url;
+    updateNavbar();
+  }
+}
+
+// Save profile
+document.getElementById('saveProfile').onclick = () => {
+  currentUser.name = document.getElementById('pf_name').value;
+  currentUser.bio = document.getElementById('pf_bio').value;
+
+  // Update users array and localStorage
+  const idx = users.findIndex(u => u.email === session.email);
+  if(idx!==-1) users[idx] = currentUser;
+  localStorage.setItem('users', JSON.stringify(users));
+
+  updateNavbar();
+  alert('Profile saved!');
+}
+
+// Cancel profile
+document.getElementById('cancelProfile').onclick = () => prefillProfile();
+</script>
+
+</body>
+</html>

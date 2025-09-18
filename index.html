@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Social — Login / Signup</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+ 
+  <link rel="stylesheet" href="styleindex.css">
+</head>
+
+<body>
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <h1><i class="fa-solid fa-university"></i> College Social</h1>
+
+      <!-- Signup -->
+      <div id="signup-pane">
+        <h2><i class="fa-solid fa-graduation-cap"></i> Create account</h2>
+        <input id="su_name" placeholder="Full name" />
+        <input id="su_email" type="email" placeholder="Email" />
+        <input id="su_password" type="password" placeholder="Password" />
+        <div class="row">
+          <select id="su_college_select"><option value="">Select college</option></select>
+          <input id="su_college_new" placeholder="Or create new college" />
+        </div>
+        <button id="btnSignup"><i class="fa-solid fa-user-plus"></i> Sign up</button>
+        <p class="muted">Already have account? <a id="showLogin">Login</a></p>
+      </div>
+
+      <!-- Login -->
+      <div id="login-pane" style="display:none;">
+        <h2><i class="fa-solid fa-right-to-bracket"></i> Login</h2>
+        <input id="li_email" type="email" placeholder="Email" />
+        <input id="li_password" type="password" placeholder="Password" />
+        <button id="btnLogin"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+        <p class="muted"><a id="showSignup">Create account</a> · <a id="showReset">Forgot?</a></p>
+      </div>
+
+      <!-- Reset -->
+      <div id="reset-pane" style="display:none;">
+        <h2><i class="fa-solid fa-key"></i> Reset password</h2>
+        <input id="rs_email" type="email" placeholder="Registered email" />
+        <button id="btnReset"><i class="fa-solid fa-paper-plane"></i> Find account</button>
+        <p class="muted"><a id="backLogin">Back</a></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Simple DB util
+    const DB = {
+      get: (k) => JSON.parse(localStorage.getItem(k) || "[]"),
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+    };
+
+    // Init defaults
+    if(!localStorage.getItem("colleges")) DB.set("colleges", ["My College"]);
+    if(!localStorage.getItem("users")) DB.set("users", []);
+
+    const signupPane = document.querySelector("#signup-pane");
+    const loginPane = document.querySelector("#login-pane");
+    const resetPane = document.querySelector("#reset-pane");
+    const suCollegeSelect = document.querySelector("#su_college_select");
+
+    function refreshColleges(){
+      const colleges = DB.get("colleges");
+      suCollegeSelect.innerHTML = '<option value="">Select college</option>';
+      colleges.forEach(c=>{
+        const opt = document.createElement("option");
+        opt.value=c; opt.textContent=c;
+        suCollegeSelect.appendChild(opt);
+      });
+    }
+    refreshColleges();
+
+    // Pane switching
+    document.querySelector("#showLogin").onclick = ()=>{ signupPane.style.display="none"; loginPane.style.display="block"; resetPane.style.display="none"; };
+    document.querySelector("#showSignup").onclick = ()=>{ signupPane.style.display="block"; loginPane.style.display="none"; resetPane.style.display="none"; };
+    document.querySelector("#showReset").onclick = ()=>{ signupPane.style.display="none"; loginPane.style.display="none"; resetPane.style.display="block"; };
+    document.querySelector("#backLogin").onclick = ()=>{ signupPane.style.display="none"; loginPane.style.display="block"; resetPane.style.display="none"; };
+
+    // Signup
+    document.querySelector("#btnSignup").onclick = ()=>{
+      const name = document.querySelector("#su_name").value.trim();
+      const email = document.querySelector("#su_email").value.trim().toLowerCase();
+      const pass = document.querySelector("#su_password").value;
+      const newCol = document.querySelector("#su_college_new").value.trim();
+      const college = newCol || suCollegeSelect.value;
+
+      if(!name || !email || !pass || !college) return alert("Fill all fields!");
+      const users = DB.get("users");
+      if(users.find(u=>u.email===email)) return alert("Email already exists!");
+
+      let colleges = DB.get("colleges");
+      if(newCol && !colleges.includes(newCol)){ colleges.push(newCol); DB.set("colleges", colleges); refreshColleges(); }
+
+      users.push({name, email, password:pass, college});
+      DB.set("users", users);
+      DB.set("session", {email});
+      location.href="feed.html";
+    };
+
+    // Login
+    document.querySelector("#btnLogin").onclick = ()=>{
+      const email = document.querySelector("#li_email").value.trim().toLowerCase();
+      const pass = document.querySelector("#li_password").value;
+      const users = DB.get("users");
+      const u = users.find(x=>x.email===email && x.password===pass);
+      if(!u) return alert("Invalid credentials!");
+      DB.set("session", {email});
+      location.href="feed.html";
+    };
+
+    // Reset
+    document.querySelector("#btnReset").onclick = ()=>{
+      const email = document.querySelector("#rs_email").value.trim().toLowerCase();
+      const users = DB.get("users");
+      const u = users.find(x=>x.email===email);
+      if(!u) return alert("No account found!");
+      const np = prompt("Enter new password for " + email);
+      if(np){ u.password=np; DB.set("users", users); alert("Password updated!"); loginPane.style.display="block"; resetPane.style.display="none"; }
+    };
+  });
+  </script>
+</body>
+</html>
